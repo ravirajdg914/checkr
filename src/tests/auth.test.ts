@@ -9,6 +9,14 @@ describe("Auth Utility Functions", () => {
   const mockUser = { id: 1, email: "testuser@example.com" };
   const JWT_SECRET = "checkrsecretjwt";
 
+  beforeAll(() => {
+    process.env.JWT_SECRET = JWT_SECRET;
+  });
+
+  afterAll(() => {
+    jest.resetModules();
+  });
+
   describe("generateToken", () => {
     it("should generate a valid JWT token for a user", () => {
       const token = generateToken(mockUser);
