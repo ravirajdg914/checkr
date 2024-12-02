@@ -7,10 +7,11 @@ import { Request, Response, NextFunction } from "express";
 
 describe("Auth Utility Functions", () => {
   const mockUser = { id: 1, email: "testuser@example.com" };
-  const JWT_SECRET = "checkrsecretjwt";
+
+  const mockJWTSecret = "checkrsecretjwt";
 
   beforeAll(() => {
-    process.env.JWT_SECRET = JWT_SECRET;
+    process.env.JWT_SECRET = mockJWTSecret;
   });
 
   afterAll(() => {
@@ -21,7 +22,7 @@ describe("Auth Utility Functions", () => {
     it("should generate a valid JWT token for a user", () => {
       const token = generateToken(mockUser);
 
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, mockJWTSecret);
 
       expect(decoded).toHaveProperty("id", mockUser.id);
       expect(decoded).toHaveProperty("email", mockUser.email);
@@ -31,6 +32,7 @@ describe("Auth Utility Functions", () => {
   describe("verifyToken Middleware", () => {
     const mockRequest = (): Partial<Request> => ({
       headers: {},
+      user_id: undefined,
     });
 
     const mockResponse = (): Partial<Response> => {
@@ -83,7 +85,7 @@ describe("Auth Utility Functions", () => {
     });
 
     it("should return 403 if token payload is invalid", () => {
-      const invalidToken = jwt.sign({}, JWT_SECRET, { expiresIn: "1h" });
+      const invalidToken = jwt.sign({}, mockJWTSecret, { expiresIn: "1h" });
       const req = mockRequest() as Request;
       const res = mockResponse() as Response;
 
