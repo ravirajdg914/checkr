@@ -8,7 +8,6 @@ class AuthService {
   async signup(email: string, password: string) {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      // Use the createCustomError function to throw the error
       throw createCustomError(MESSAGES.ERROR.EMAIL_TAKEN, 400);
     }
 

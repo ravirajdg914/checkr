@@ -8,21 +8,20 @@ import { Request, Response, NextFunction } from "express";
 describe("Auth Utility Functions", () => {
   const mockUser = { id: 1, email: "testuser@example.com" };
 
-  const mockJWTSecret = "checkrsecretjwt";
-
+  // Mock JWT_SECRET before running tests
   beforeAll(() => {
-    process.env.JWT_SECRET = mockJWTSecret;
+    process.env.JWT_SECRET = "checkrsecretjwt"; // Mock the environment variable
   });
 
   afterAll(() => {
-    jest.resetModules();
+    delete process.env.JWT_SECRET; // Clean up after tests
   });
 
   describe("generateToken", () => {
     it("should generate a valid JWT token for a user", () => {
       const token = generateToken(mockUser);
 
-      const decoded = jwt.verify(token, mockJWTSecret);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
 
       expect(decoded).toHaveProperty("id", mockUser.id);
       expect(decoded).toHaveProperty("email", mockUser.email);
@@ -32,7 +31,6 @@ describe("Auth Utility Functions", () => {
   describe("verifyToken Middleware", () => {
     const mockRequest = (): Partial<Request> => ({
       headers: {},
-      user_id: undefined,
     });
 
     const mockResponse = (): Partial<Response> => {
@@ -85,7 +83,9 @@ describe("Auth Utility Functions", () => {
     });
 
     it("should return 403 if token payload is invalid", () => {
-      const invalidToken = jwt.sign({}, mockJWTSecret, { expiresIn: "1h" });
+      const invalidToken = jwt.sign({}, process.env.JWT_SECRET as string, {
+        expiresIn: "1h",
+      });
       const req = mockRequest() as Request;
       const res = mockResponse() as Response;
 
