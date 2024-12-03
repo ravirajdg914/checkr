@@ -26,7 +26,9 @@ export const generateToken = (user: { id: number; email: string }): string => {
 };
 
 export const verifyToken = (
-  token: string
+  token: string,
+  p0: any,
+  p1: jest.Mock<any, any, any>
 ): { id: number; email: string } | null => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {

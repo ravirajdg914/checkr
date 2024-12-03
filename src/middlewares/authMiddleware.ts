@@ -1,19 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { MESSAGES, STATUS_CODES } from "../utils/constants";
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "checkrsecretjwt";
+const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined in environment variables");
+  throw new Error(MESSAGES.ERROR.JWT_SECRET_UNDEFINED);
 }
 
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 
 export const generateToken = (user: { id: number; email: string }): string => {
   if (!user?.id || !user?.email) {
-    throw new Error("User object must have `id` and `email` properties.");
+    throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
   }
 
   const payload = {
@@ -34,7 +35,9 @@ export const verifyToken = (
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ message: "Access Denied: No token provided" });
+    res
+      .status(STATUS_CODES.UNAUTHORIZED)
+      .json({ message: MESSAGES.ERROR.NO_TOKEN_PROVIDED });
     return;
   }
 
@@ -44,13 +47,15 @@ export const verifyToken = (
     const decoded = jwt.verify(token, JWT_SECRET);
 
     if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
-      throw new Error("Invalid token payload");
+      throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
     }
 
     req.user = decoded;
     next();
   } catch (error) {
     console.error("Token verification error:", error);
-    res.status(403).json({ message: "Invalid or expired token" });
+    res
+      .status(STATUS_CODES.FORBIDDEN)
+      .json({ message: MESSAGES.ERROR.INVALID_OR_EXPIRED_TOKEN });
   }
 };
