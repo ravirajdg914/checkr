@@ -17,6 +17,14 @@ describe("Auth Utility Functions", () => {
     delete process.env.JWT_SECRET; // Clean up after tests
   });
 
+  beforeEach(() => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe("generateToken", () => {
     it("should generate a valid JWT token for a user", () => {
       const token = generateToken(mockUser);
