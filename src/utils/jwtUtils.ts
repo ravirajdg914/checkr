@@ -24,7 +24,8 @@ export const generateToken = (user: { id: number; email: string }): string => {
   try {
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     return token;
-  } catch (error) {
+  } catch (error: any) {
+    console.log("error", error.message);
     throw new Error(MESSAGES.ERROR.INTERNAL_SERVER_ERROR);
   }
 };
@@ -43,13 +44,14 @@ export const verifyToken = (
       email: string;
     };
 
-    if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
-      throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
-    }
+    // if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
+    //   //instance of
+    //   throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
+    // }
 
     return decoded;
   } catch (error) {
-    console.error(MESSAGES.ERROR.TOKEN_VERIFICATION_FAILED, error);
+    console.error(MESSAGES.ERROR.TOKEN_VERIFICATION_FAILED);
     return null;
   }
 };
