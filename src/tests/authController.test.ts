@@ -4,6 +4,15 @@ import { MESSAGES } from "../utils/constants";
 import { createCustomError } from "../utils/errorUtil";
 import authService from "../services/authService";
 
+import jwt from "jsonwebtoken";
+jest.mock("jsonwebtoken", () => ({
+  ...jest.requireActual("jsonwebtoken"), // import and retain the original functionalities
+  verify: jest.fn().mockReturnValue({ foo: "bar" }), // overwrite verify
+}));
+
+const verify = jest.spyOn(jwt, "verify");
+verify.mockImplementation(() => () => ({ verified: "true" }));
+
 // Mocking Sequelize Model Methods
 jest.mock("../models/userModel", () => ({
   findOne: jest.fn(),

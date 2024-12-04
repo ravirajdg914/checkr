@@ -1,6 +1,14 @@
 import { generateToken } from "../utils/jwtUtils"; // Adjust the path to your utils
 import jwt from "jsonwebtoken";
 
+jest.mock("jsonwebtoken", () => ({
+  ...jest.requireActual("jsonwebtoken"), // import and retain the original functionalities
+  verify: jest.fn().mockReturnValue({ foo: "bar" }), // overwrite verify
+}));
+
+const verify = jest.spyOn(jwt, "verify");
+verify.mockImplementation(() => () => ({ verified: "true" }));
+
 describe("JWT Utility Functions", () => {
   const mockUser = { id: 1, email: "testuser@example.com" };
 
