@@ -1,42 +1,76 @@
-import { generateToken } from "../utils/jwtUtils"; // Adjust the path to your utils
+import { generateToken, verifyToken } from "../utils/jwtUtils";
 import jwt from "jsonwebtoken";
+import { MESSAGES } from "../utils/constants";
 
-jest.mock("jsonwebtoken", () => ({
-  ...jest.requireActual("jsonwebtoken"), // import and retain the original functionalities
-  verify: jest.fn().mockReturnValue({ foo: "bar" }), // overwrite verify
+// Mock the constants file to return custom mock values
+jest.mock("../utils/constants", () => ({
+  MESSAGES: {
+    SUCCESS: { TOKEN_GENERATED: "Token generated successfully." },
+    ERROR: {
+      INVALID_CREDENTIALS: "Invalid credentials.",
+      NO_TOKEN_PROVIDED: "No token provided.",
+      INTERNAL_SERVER_ERROR: "Internal server error.",
+      TOKEN_VERIFICATION_FAILED: "Token verification failed.",
+    },
+  },
 }));
 
-const verify = jest.spyOn(jwt, "verify");
-verify.mockImplementation(() => () => ({ verified: "true" }));
+jest.mock("jsonwebtoken", () => ({
+  sign: jest.fn(),
+  verify: jest.fn(),
+}));
 
-describe("JWT Utility Functions", () => {
-  const mockUser = { id: 1, email: "testuser@example.com" };
+describe("Auth Service", () => {
+  const mockUser = { id: 1, email: "user@example.com" };
+  const mockToken = "mockedToken";
 
-  beforeAll(() => {
-    // Mock JWT_SECRET for testing purposes
-    process.env.JWT_SECRET = "checkrsecretjwt"; // Provide a fallback secret for tests
+  beforeEach(() => {
+    (jwt.sign as jest.Mock).mockReturnValue(mockToken);
+    (jwt.verify as jest.Mock).mockReturnValue({
+      id: 1,
+      email: "user@example.com",
+    });
   });
 
-  it("should generate a valid JWT token for a user", () => {
+  it("should generate token for valid user", () => {
     const token = generateToken(mockUser);
-
-    // Decode the token to verify payload
-    const decoded = jwt.verify(token, "checkrsecretjwt");
-
-    expect(decoded).toHaveProperty("id", mockUser.id);
-    expect(decoded).toHaveProperty("email", mockUser.email);
+    expect(token).toBe(mockToken);
+    expect(jwt.sign).toHaveBeenCalledWith(
+      { id: mockUser.id, email: mockUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "1d" }
+    );
   });
 
-  it("should throw an error if JWT_SECRET is not defined", () => {
-    // Temporarily unset the JWT_SECRET for this test
-    delete process.env.JWT_SECRET;
+  it("should throw error for invalid user object", () => {
+    expect(() => generateToken({ id: 1 } as any)).toThrow(
+      MESSAGES.ERROR.INVALID_CREDENTIALS
+    );
+  });
 
-    try {
-      generateToken(mockUser);
-    } catch (error: any) {
-      expect(error.message).toBe(
-        "JWT_SECRET is not defined in environment variables"
-      );
-    }
+  it("should throw internal error on token generation failure", () => {
+    (jwt.sign as jest.Mock).mockImplementationOnce(() => {
+      throw new Error();
+    });
+    expect(() => generateToken(mockUser)).toThrow(
+      MESSAGES.ERROR.INTERNAL_SERVER_ERROR
+    );
+  });
+
+  it("should validate token", () => {
+    const decoded = verifyToken(mockToken);
+    expect(decoded).toEqual({ id: 1, email: "user@example.com" });
+    expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET);
+  });
+
+  it("should return null for invalid token", () => {
+    (jwt.verify as jest.Mock).mockImplementationOnce(() => {
+      throw new Error();
+    });
+    expect(verifyToken("invalidToken")).toBeNull();
+  });
+
+  it("should handle missing token", () => {
+    expect(verifyToken("")).toBeNull();
   });
 });
