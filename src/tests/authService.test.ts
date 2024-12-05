@@ -57,6 +57,16 @@ describe("AuthService", () => {
       expect(result.email).toBe(mockUser.email);
       expect(result.id).toBe(mockUser.id);
     });
+
+    it("should throw error if findOne fails", async () => {
+      (User.findOne as jest.Mock).mockRejectedValueOnce(new Error("DB error")); // Simulate DB error
+
+      try {
+        await authService.signup(mockUser.email, "password123");
+      } catch (error: any) {
+        expect(error.message).toBe("DB error"); // Ensure the error message matches
+      }
+    });
   });
 
   describe("signin", () => {

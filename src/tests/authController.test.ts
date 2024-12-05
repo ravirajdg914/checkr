@@ -57,6 +57,19 @@ describe("AuthService", () => {
       expect(result.email).toBe(mockUser.email);
       expect(result.id).toBe(mockUser.id);
     });
+
+    it("should throw error if bcrypt hash fails", async () => {
+      (User.findOne as jest.Mock).mockResolvedValueOnce(null); // No user found
+      (bcrypt.hash as jest.Mock).mockRejectedValueOnce(
+        new Error("Hashing error")
+      );
+
+      try {
+        await authService.signup(mockUser.email, "password123");
+      } catch (error: any) {
+        expect(error.message).toBe("Hashing error");
+      }
+    });
   });
 
   describe("signin", () => {
@@ -85,6 +98,32 @@ describe("AuthService", () => {
 
       // expect(result.token).toBeDefined(); // Token should be defined
       expect(result.user.email).toBe(mockUser.email); // User email should match
+    });
+
+    it("should throw error if password comparison fails", async () => {
+      // Mock `findOne` to simulate user found
+      (User.findOne as jest.Mock).mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false); // Password does not match
+
+      try {
+        await authService.signin(mockUser.email, "wrongPassword");
+      } catch (error) {
+        expect(error).toEqual(
+          createCustomError(MESSAGES.ERROR.INVALID_CREDENTIALS, 401)
+        );
+      }
+    });
+
+    it("should throw error if user not found", async () => {
+      (User.findOne as jest.Mock).mockResolvedValueOnce(null); // No user found
+
+      try {
+        await authService.signin(mockUser.email, "password123");
+      } catch (error) {
+        expect(error).toEqual(
+          createCustomError(MESSAGES.ERROR.INVALID_CREDENTIALS, 401)
+        );
+      }
     });
   });
 });
