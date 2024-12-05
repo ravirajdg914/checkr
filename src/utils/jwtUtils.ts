@@ -44,11 +44,6 @@ export const verifyToken = (
       email: string;
     };
 
-    // if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
-    //   //instance of
-    //   throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
-    // }
-
     return decoded;
   } catch (error) {
     console.error(MESSAGES.ERROR.TOKEN_VERIFICATION_FAILED);
