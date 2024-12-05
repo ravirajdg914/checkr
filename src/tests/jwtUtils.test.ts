@@ -38,11 +38,6 @@ describe("Auth Service", () => {
   it("should generate token for valid user", () => {
     const token = generateToken(mockUser);
     expect(token).toBe(mockToken);
-    // expect(jwt.sign).toHaveBeenCalledWith(
-    //   { id: mockUser.id, email: mockUser.email },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: process.env.JWT_EXPIRES_IN || "1d" }
-    // );
   });
 
   it("should throw error for invalid user object", () => {
@@ -75,5 +70,34 @@ describe("Auth Service", () => {
 
   it("should handle missing token", () => {
     expect(verifyToken("")).toBeNull();
+  });
+
+  it("should return null for invalid token during verification", () => {
+    const invalidToken = "invalidToken";
+    jest.spyOn(jwt, "verify").mockImplementation(() => {
+      throw new Error("Invalid token");
+    });
+
+    const result = verifyToken(invalidToken);
+
+    expect(result).toBeNull();
+  });
+
+  it("should fail if JWT_SECRET is not defined", () => {
+    process.env.JWT_SECRET = ""; // Simulate missing secret
+    try {
+      generateToken(mockUser);
+    } catch (error: any) {
+      expect(error.message).toBe(MESSAGES.ERROR.INTERNAL_SERVER_ERROR);
+    }
+  });
+
+  it("should handle errors in token verification", () => {
+    jwt.verify = jest.fn().mockImplementation(() => {
+      throw new Error("Token verification failed");
+    });
+
+    const result = verifyToken(mockToken);
+    expect(result).toBeNull();
   });
 });

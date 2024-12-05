@@ -66,4 +66,27 @@ describe("Auth Middleware", () => {
       message: MESSAGES.ERROR.INVALID_OR_EXPIRED_TOKEN,
     });
   });
+
+  it("should return 403 when token is expired", () => {
+    const expiredToken = "expiredToken";
+    const mockRequest = {
+      headers: { authorization: `Bearer ${expiredToken}` },
+    } as Request;
+    const mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as unknown as Response;
+    const mockNext = jest.fn() as NextFunction;
+
+    jwt.verify = jest.fn().mockImplementation(() => {
+      throw new Error("Token expired");
+    });
+
+    verifyToken(mockRequest, mockResponse, mockNext);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      message: MESSAGES.ERROR.INVALID_OR_EXPIRED_TOKEN,
+    });
+  });
 });

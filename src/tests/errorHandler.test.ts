@@ -43,4 +43,23 @@ describe("Error Handler", () => {
       errorMessage: "Test error without status",
     });
   });
+
+  it("should handle non-CustomError and return 500", () => {
+    const mockRequest = {} as Request;
+    const mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as unknown as Response;
+    const mockNext = {} as NextFunction;
+
+    const error = new Error("General error");
+
+    errorHandler(error, mockRequest, mockResponse, mockNext);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(500); // Default status
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      statusCode: 500,
+      errorMessage: "General error",
+    });
+  });
 });
