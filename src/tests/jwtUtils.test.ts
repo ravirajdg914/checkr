@@ -15,6 +15,9 @@ jest.mock("../utils/constants", () => ({
   },
 }));
 
+jest.spyOn(console, "error").mockImplementation(() => {});
+jest.spyOn(console, "log").mockImplementation(() => {});
+
 jest.mock("jsonwebtoken", () => ({
   sign: jest.fn(),
   verify: jest.fn(),
