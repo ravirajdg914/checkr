@@ -1,13 +1,12 @@
 import express from "express";
 import { signup, signin, logout } from "../controllers/authController";
 import { signupValidator, signinValidator } from "../validators/authValidator";
-import { verifyToken } from "../middlewares/authMiddleware";
-import asyncHandler from "../utils/asyncHandler";
+import { tokenMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
-router.post("/signup", signupValidator, asyncHandler(signup));
-router.post("/signin", signinValidator, asyncHandler(signin));
-router.post("/logout", verifyToken, logout);
+router.post("/signup", signupValidator, signup);
+router.post("/signin", signinValidator, signin);
+router.post("/logout", tokenMiddleware, logout);
 
 export default router;

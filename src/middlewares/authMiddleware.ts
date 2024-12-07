@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { MESSAGES, STATUS_CODES } from "../utils/constants";
+import { verifyToken as jwtVerifyToken } from "../utils/jwtUtils";
 
 dotenv.config();
 
@@ -10,31 +10,14 @@ if (!JWT_SECRET) {
   throw new Error(MESSAGES.ERROR.JWT_SECRET_UNDEFINED);
 }
 
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
-
-export const generateToken = (user: { id: number; email: string }): string => {
-  if (!user?.id || !user?.email) {
-    throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
-  }
-
-  const payload = {
-    id: user.id,
-    email: user.email,
-  };
-
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-
-  return token;
-};
-
-export const verifyToken = (
+export const tokenMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res
       .status(STATUS_CODES.UNAUTHORIZED)
       .json({ message: MESSAGES.ERROR.NO_TOKEN_PROVIDED });
@@ -44,16 +27,16 @@ export const verifyToken = (
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwtVerifyToken(token);
 
-    if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
+    if (!decoded) {
       throw new Error(MESSAGES.ERROR.INVALID_TOKEN_PAYLOAD);
     }
 
     req.user = decoded;
     next();
   } catch (error) {
-    console.error("Token verification error:", error);
+    console.error(MESSAGES.ERROR.TOKEN_VERIFICATION_FAILED, error);
     res
       .status(STATUS_CODES.FORBIDDEN)
       .json({ message: MESSAGES.ERROR.INVALID_OR_EXPIRED_TOKEN });

@@ -1,4 +1,4 @@
-import { verifyToken } from "../middlewares/authMiddleware";
+import { tokenMiddleware } from "../middlewares/authMiddleware";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { MESSAGES, STATUS_CODES } from "../utils/constants";
@@ -22,7 +22,7 @@ describe("Auth Middleware", () => {
       .fn()
       .mockReturnValue({ id: 1, email: "test@example.com" });
 
-    verifyToken(mockRequest, mockResponse, mockNext);
+    tokenMiddleware(mockRequest, mockResponse, mockNext);
 
     expect(jwt.verify).toHaveBeenCalledWith(token, expect.anything());
     expect(mockNext).toHaveBeenCalled();
@@ -36,7 +36,7 @@ describe("Auth Middleware", () => {
     } as unknown as Response;
     const mockNext = jest.fn() as NextFunction;
 
-    verifyToken(mockRequest, mockResponse, mockNext);
+    tokenMiddleware(mockRequest, mockResponse, mockNext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(STATUS_CODES.UNAUTHORIZED);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -59,7 +59,7 @@ describe("Auth Middleware", () => {
       throw new Error("Invalid token");
     });
 
-    verifyToken(mockRequest, mockResponse, mockNext);
+    tokenMiddleware(mockRequest, mockResponse, mockNext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -82,7 +82,7 @@ describe("Auth Middleware", () => {
       throw new Error("Token expired");
     });
 
-    verifyToken(mockRequest, mockResponse, mockNext);
+    tokenMiddleware(mockRequest, mockResponse, mockNext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
     expect(mockResponse.json).toHaveBeenCalledWith({

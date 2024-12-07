@@ -10,9 +10,12 @@ if (!JWT_SECRET) {
 }
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
+if (!JWT_EXPIRES_IN) {
+  throw new Error(MESSAGES.ERROR.JWT_EXPIRES_IN_UNDEFINED);
+}
 
 export const generateToken = (user: { id: number; email: string }): string => {
-  if (!user?.id || !user?.email) {
+  if (!user.id || !user.email) {
     throw new Error(MESSAGES.ERROR.INVALID_CREDENTIALS);
   }
 
@@ -25,7 +28,6 @@ export const generateToken = (user: { id: number; email: string }): string => {
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     return token;
   } catch (error: any) {
-    console.log("error", error.message);
     throw new Error(MESSAGES.ERROR.INTERNAL_SERVER_ERROR);
   }
 };

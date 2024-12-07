@@ -5,6 +5,8 @@ export const MESSAGES = {
     LOGOUT_SUCCESS: "Successfully logged out.",
     TOKEN_GENERATED: "Token generated successfully.",
     TOKEN_VALIDATED: "Token validated successfully.",
+    DATABASE_CONNECTED: "Database connected successfully.",
+    SERVER_RUNNING: (port: any) => `Server running on http://localhost:${port}`,
   },
   ERROR: {
     EMAIL_TAKEN: "Email is already taken.",
@@ -13,8 +15,11 @@ export const MESSAGES = {
     INVALID_OR_EXPIRED_TOKEN: "Invalid or expired token.",
     INTERNAL_SERVER_ERROR: "Internal Server Error.",
     JWT_SECRET_UNDEFINED: "JWT_SECRET is not defined in environment variables.",
+    JWT_EXPIRES_IN_UNDEFINED:
+      "JWT_EXPIRES_IN is not defined in environment variables.",
     INVALID_TOKEN_PAYLOAD: "Invalid token payload",
     TOKEN_VERIFICATION_FAILED: "Token verification failed.",
+    DATABASE_CONNECTION_FAILED: "Unable to connect to the database.",
   },
 };
 
