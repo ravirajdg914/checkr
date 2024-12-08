@@ -65,7 +65,6 @@ export const updateCandidate = asyncHandler(
       message: MESSAGES.SUCCESS.CANDIDATE_UPDATED,
       candidate: updatedCandidate,
     });
-    return;
   }
 );
 

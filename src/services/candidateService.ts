@@ -1,5 +1,6 @@
 import Candidate from "../models/candidateModel";
 import { STATUS_CODES, MESSAGES } from "../utils/constants";
+import { CustomError } from "../utils/errorUtil";
 
 class CandidateService {
   async createCandidate(data: {
@@ -14,11 +15,9 @@ class CandidateService {
     const existingCandidate = await Candidate.findOne({
       where: { email: data.email },
     });
+
     if (existingCandidate) {
-      throw {
-        status: STATUS_CODES.BAD_REQUEST,
-        message: MESSAGES.ERROR.EMAIL_TAKEN,
-      };
+      throw new CustomError(MESSAGES.ERROR.EMAIL_TAKEN, STATUS_CODES.BAD_REQUEST);
     }
 
     const candidate = await Candidate.create(data);
@@ -26,23 +25,13 @@ class CandidateService {
   }
 
   async getCandidateById(id: number) {
-    try {
-      const candidate = await Candidate.findByPk(id);
+    const candidate = await Candidate.findByPk(id);
 
-      if (!candidate) {
-        throw {
-          status: STATUS_CODES.NOT_FOUND,
-          message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND,
-        };
-      }
-
-      return candidate;
-    } catch (error: any) {
-      throw {
-        status: error.status || STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: error.message || MESSAGES.ERROR.INTERNAL_SERVER_ERROR,
-      };
+    if (!candidate) {
+      throw new CustomError(MESSAGES.ERROR.CANDIDATE_NOT_FOUND, STATUS_CODES.NOT_FOUND);
     }
+
+    return candidate;
   }
 
   async getAllCandidates() {

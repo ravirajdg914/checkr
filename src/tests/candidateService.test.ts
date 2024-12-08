@@ -1,6 +1,7 @@
 import candidateService from "../services/candidateService";
 import Candidate from "../models/candidateModel";
-import { MESSAGES } from "../utils/constants";
+import { MESSAGES, STATUS_CODES } from "../utils/constants";
+import { CustomError } from "../utils/errorUtil";
 
 jest.mock("../models/candidateModel", () => ({
   findOne: jest.fn(),
@@ -30,10 +31,13 @@ describe("CandidateService", () => {
       try {
         await candidateService.createCandidate(mockCandidate);
       } catch (error) {
-        expect(error).toEqual({
-          status: 400,
-          message: MESSAGES.ERROR.EMAIL_TAKEN,
-        });
+        expect(error).toBeInstanceOf(CustomError);
+        expect(error).toEqual(
+          expect.objectContaining({
+            message: MESSAGES.ERROR.EMAIL_TAKEN,
+            status: STATUS_CODES.BAD_REQUEST,
+          })
+        );
       }
     });
 
@@ -54,10 +58,13 @@ describe("CandidateService", () => {
       try {
         await candidateService.getCandidateById(1);
       } catch (error) {
-        expect(error).toEqual({
-          status: 404,
-          message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND,
-        });
+        expect(error).toBeInstanceOf(CustomError);
+        expect(error).toEqual(
+          expect.objectContaining({
+            message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND,
+            status: STATUS_CODES.NOT_FOUND,
+          })
+        );
       }
     });
 
