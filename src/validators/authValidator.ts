@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { STATUS_CODES } from "../utils/constants";
 
 export const signupValidator = (req: any, res: any, next: any) => {
   const schema = Joi.object({
@@ -15,7 +16,7 @@ export const signupValidator = (req: any, res: any, next: any) => {
   const { error } = schema.validate(req.body);
 
   if (error) {
-    return res.status(400).json({
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
       error: error.details.map((err: any) => err.message),
     });
   }
