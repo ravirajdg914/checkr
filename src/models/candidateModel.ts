@@ -14,8 +14,8 @@ class Candidate extends Model {
   public status!: "clear" | "consider";
   public location!: string;
   public date!: Date;
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Candidate.init(
@@ -71,8 +71,7 @@ Candidate.init(
     sequelize,
     tableName: "candidates",
     modelName: "Candidate",
-    createdAt: "created_at",
-    updatedAt: "updated_at",
+    timestamps: true,
   }
 );
 

@@ -1,5 +1,5 @@
 import Candidate from "../models/candidateModel";
-import { STATUS_CODES, MESSAGES } from "../utils/constants";
+import { STATUS_CODES, MESSAGES, CANDIDATE_ATTRIBUTES } from "../utils/constants";
 import { CustomError } from "../utils/errorUtil";
 
 class CandidateService {
@@ -37,11 +37,11 @@ class CandidateService {
   async getAllCandidates() {
     try {
       const candidates = await Candidate.findAll({
-        attributes: ["name", "adjudication", "status", "location", "date"],
+        attributes: CANDIDATE_ATTRIBUTES,
       });
       return candidates;
     } catch (error: any) {
-      throw new Error(MESSAGES.ERROR.FETCH_CANDIDATES_FAILED);
+      throw new CustomError(MESSAGES.ERROR.FETCH_CANDIDATES_FAILED, STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 

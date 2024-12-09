@@ -39,3 +39,11 @@ export const STATUS_CODES = {
   UNPROCESSABLE_ENTITY: 422,
   NOT_FOUND: 404,
 };
+
+export const CANDIDATE_ATTRIBUTES = [
+  "name",
+  "adjudication",
+  "status",
+  "location",
+  "date",
+];

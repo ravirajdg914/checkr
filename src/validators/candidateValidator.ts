@@ -1,49 +1,49 @@
 import Joi from "joi";
-import { STATUS_CODES } from "../utils/constants";
+import { CANDIDATE_VALIDATION_MESSAGES, CANDIDATE_VALIDATION_STATUS_CODES } from "../utils/candidateValidationConstants";
 
 export const createCandidateValidator = (req: any, res: any, next: any) => {
   const schema = Joi.object({
     name: Joi.string().required().messages({
-      "any.required": "Name is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.NAME.REQUIRED,
     }),
     email: Joi.string().email().required().messages({
-      "string.email": "Please provide a valid email address.",
-      "any.required": "Email is required.",
+      "string.email": CANDIDATE_VALIDATION_MESSAGES.EMAIL.INVALID,
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.EMAIL.REQUIRED,
     }),
     dob: Joi.date().required().messages({
-      "any.required": "Date of birth is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.DOB.REQUIRED,
     }),
     phone: Joi.string().required().messages({
-      "any.required": "Phone number is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.PHONE.REQUIRED,
     }),
     zipcode: Joi.string().required().messages({
-      "any.required": "Zip code is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.ZIPCODE.REQUIRED,
     }),
     social_security: Joi.string().required().messages({
-      "any.required": "Social security number is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.SOCIAL_SECURITY.REQUIRED,
     }),
     drivers_license: Joi.string().required().messages({
-      "any.required": "Driver's license is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.DRIVERS_LICENSE.REQUIRED,
     }),
     adjudication: Joi.string().allow(null).messages({
-      "string.base": "Adjudication must be a string.",
+      "string.base": CANDIDATE_VALIDATION_MESSAGES.ADJUDICATION.STRING,
     }),
     status: Joi.string().valid("clear", "consider").required().messages({
-      "any.only": "Status must be either 'clear' or 'consider'.",
-      "any.required": "Status is required.",
+      "any.only": CANDIDATE_VALIDATION_MESSAGES.STATUS.INVALID,
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.STATUS.REQUIRED,
     }),
     location: Joi.string().required().messages({
-      "any.required": "Location is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.LOCATION.REQUIRED,
     }),
     date: Joi.date().required().messages({
-      "any.required": "Date is required.",
+      "any.required": CANDIDATE_VALIDATION_MESSAGES.DATE.REQUIRED,
     }),
   });
 
   const { error } = schema.validate(req.body);
 
   if (error) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
+    return res.status(CANDIDATE_VALIDATION_STATUS_CODES.BAD_REQUEST).json({
       error: error.details.map((err: any) => err.message),
     });
   }
