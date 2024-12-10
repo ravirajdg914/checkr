@@ -1,4 +1,7 @@
 /node_modules
 /.env
 /dist/*
-/coverage
+
+/coverage/lcov-report
+/coverage/clover.xml
+/coverage/coverage-final.json
