@@ -7,6 +7,8 @@ export const MESSAGES = {
     TOKEN_VALIDATED: "Token validated successfully.",
     DATABASE_CONNECTED: "Database connected successfully.",
     SERVER_RUNNING: (port: any) => `Server running on http://localhost:${port}`,
+    CANDIDATE_UPDATED: "Candidate updated successfully.",
+    CANDIDATE_DELETED: "Candidate deleted successfully.",
   },
   ERROR: {
     EMAIL_TAKEN: "Email is already taken.",
@@ -20,6 +22,10 @@ export const MESSAGES = {
     INVALID_TOKEN_PAYLOAD: "Invalid token payload",
     TOKEN_VERIFICATION_FAILED: "Token verification failed.",
     DATABASE_CONNECTION_FAILED: "Unable to connect to the database.",
+    CANDIDATE_NOT_FOUND: "Candidate not found.",
+    UPDATE_CANDIDATE_FAILED: "Error updating candidate.",
+    DELETE_CANDIDATE_FAILED: "Error deleting candidate.",
+    FETCH_CANDIDATES_FAILED: "Error fetching candidates.",
   },
 };
 
@@ -31,4 +37,13 @@ export const STATUS_CODES = {
   FORBIDDEN: 403,
   INTERNAL_SERVER_ERROR: 500,
   UNPROCESSABLE_ENTITY: 422,
+  NOT_FOUND: 404,
 };
+
+export const CANDIDATE_ATTRIBUTES = [
+  "name",
+  "adjudication",
+  "status",
+  "location",
+  "date",
+];
