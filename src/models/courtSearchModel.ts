@@ -48,9 +48,4 @@ CourtSearch.init(
   }
 );
 
-CourtSearch.belongsTo(Candidate, { 
-    foreignKey: "candidateId",
-    onDelete: 'CASCADE'
-});
-
-export default CourtSearch; 
+export default CourtSearch;

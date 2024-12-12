@@ -1,7 +1,5 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
-import Report from './reportModel';
-import CourtSearch from './courtSearchModel';
 
 class Candidate extends Model {
   public id!: number;
@@ -76,15 +74,5 @@ Candidate.init(
     timestamps: true,
   }
 );
-
-Candidate.hasOne(Report, {
-    foreignKey: "candidateId",
-    onDelete: 'CASCADE'
-});
-
-Candidate.hasMany(CourtSearch, {
-    foreignKey: "candidateId",
-    onDelete: 'CASCADE'
-});
 
 export default Candidate;

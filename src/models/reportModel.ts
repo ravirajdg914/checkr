@@ -58,9 +58,4 @@ Report.init(
   }
 );
 
-Report.belongsTo(Candidate, { 
-    foreignKey: "candidateId",
-    onDelete: 'CASCADE'
-});
-
 export default Report;
