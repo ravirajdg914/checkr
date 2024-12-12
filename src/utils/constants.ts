@@ -26,6 +26,8 @@ export const MESSAGES = {
     UPDATE_CANDIDATE_FAILED: "Error updating candidate.",
     DELETE_CANDIDATE_FAILED: "Error deleting candidate.",
     FETCH_CANDIDATES_FAILED: "Error fetching candidates.",
+    REPORT_NOT_FOUND: "Report not found.",
+    REPORT_ALREADY_EXISTS: "Report already exists for this candidate.",
   },
 };
 
