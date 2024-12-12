@@ -28,6 +28,7 @@ export const MESSAGES = {
     FETCH_CANDIDATES_FAILED: "Error fetching candidates.",
     REPORT_NOT_FOUND: "Report not found.",
     REPORT_ALREADY_EXISTS: "Report already exists for this candidate.",
+    COURT_SEARCH_NOT_FOUND: "Court search not found.",
   },
 };
 
@@ -48,4 +49,18 @@ export const CANDIDATE_ATTRIBUTES = [
   "status",
   "location",
   "date",
+];
+
+export const REPORT_ATTRIBUTES = [
+  "status",
+  "package",
+  "adjudication",
+  "turnaround_time",
+  "completed_at"
+];
+
+export const COURT_SEARCH_ATTRIBUTES = [
+  "status",
+  "search_type",
+  "date"
 ];

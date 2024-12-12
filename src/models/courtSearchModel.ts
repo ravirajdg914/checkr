@@ -2,19 +2,17 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
 import Candidate from "./candidateModel";
 
-class Report extends Model {
+class CourtSearch extends Model {
   public id!: number;
   public status!: "clear" | "consider";
-  public package!: string;
-  public adjudication!: string;
-  public turnaround_time!: number;
-  public completed_at!: Date;
+  public search_type!: string;
+  public date!: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
   public candidateId!: number;
 }
 
-Report.init(
+CourtSearch.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -25,21 +23,13 @@ Report.init(
       type: DataTypes.ENUM("clear", "consider"),
       allowNull: false,
     },
-    package: {
+    search_type: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    adjudication: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    turnaround_time: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    completed_at: {
+    date: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
     },
     candidateId: {
       type: DataTypes.INTEGER,
@@ -52,10 +42,10 @@ Report.init(
   },
   {
     sequelize,
-    tableName: "reports",
-    modelName: "Report",
+    tableName: "court_searches",
+    modelName: "CourtSearch",
     timestamps: true,
   }
 );
 
-export default Report;
+export default CourtSearch;
