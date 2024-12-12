@@ -1,9 +1,10 @@
 import { Router } from "express";
 import {
   createReport,
-  deleteReportByCandidateId,
+  deleteReport,
   getReportByCandidateId,
-  updateReportByCandidateId,
+  updateReport,
+  getReportById,
 } from "../controllers/reportController";
 import { createReportValidator } from "../validators/reportValidator";
 import { tokenMiddleware } from "../middlewares/authMiddleware";
@@ -17,12 +18,13 @@ router.post(
   createReport
 );
 router.get("/:candidateId", tokenMiddleware, getReportByCandidateId);
+router.get("/:reportId", tokenMiddleware, getReportById);
 router.put(
-  "/:candidateId",
+  "/:reportId",
   tokenMiddleware,
   createReportValidator,
-  updateReportByCandidateId
+  updateReport
 );
-router.delete("/:candidateId", tokenMiddleware, deleteReportByCandidateId);
+router.delete("/:reportId", tokenMiddleware, deleteReport);
 
 export default router;

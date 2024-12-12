@@ -1,5 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
+import Report from './reportModel';
 
 class Candidate extends Model {
   public id!: number;
@@ -74,5 +75,10 @@ Candidate.init(
     timestamps: true,
   }
 );
+
+Candidate.hasOne(Report, {
+    foreignKey: "candidateId",
+    onDelete: 'CASCADE'
+});
 
 export default Candidate;

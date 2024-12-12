@@ -36,8 +36,8 @@ class ReportService {
     return report;
   }
 
-  async updateReportByCandidateId(candidateId: number, reportData: any) {
-    const report = await Report.findOne({ where: { candidateId } });
+  async updateReport(reportId: number, reportData: any) {
+    const report = await Report.findByPk(reportId);
     if (!report) {
       throw new CustomError(
         MESSAGES.ERROR.REPORT_NOT_FOUND,
@@ -48,8 +48,8 @@ class ReportService {
     return report;
   }
 
-  async deleteReportByCandidateId(candidateId: number) {
-    const report = await Report.findOne({ where: { candidateId } });
+  async deleteReport(reportId: number) {
+    const report = await Report.findByPk(reportId);
     if (!report) {
       throw new CustomError(
         MESSAGES.ERROR.REPORT_NOT_FOUND,
@@ -57,6 +57,17 @@ class ReportService {
       );
     }
     await report.destroy();
+  }
+
+  async getReportById(reportId: number) {
+    const report = await Report.findByPk(reportId);
+    if (!report) {
+      throw new CustomError(
+        MESSAGES.ERROR.REPORT_NOT_FOUND,
+        STATUS_CODES.NOT_FOUND
+      );
+    }
+    return report;
   }
 }
 

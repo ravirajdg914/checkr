@@ -28,14 +28,11 @@ export const getReportByCandidateId = asyncHandler(
   }
 );
 
-export const updateReportByCandidateId = asyncHandler(
+export const updateReport = asyncHandler(
   async (req: Request, res: Response) => {
-    const candidateId = parseInt(req.params.candidateId, 10);
+    const reportId = parseInt(req.params.reportId, 10);
     const reportData = req.body;
-    const updatedReport = await reportService.updateReportByCandidateId(
-      candidateId,
-      reportData
-    );
+    const updatedReport = await reportService.updateReport(reportId, reportData);
 
     if (!updatedReport) {
       return res
@@ -47,13 +44,28 @@ export const updateReportByCandidateId = asyncHandler(
   }
 );
 
-export const deleteReportByCandidateId = asyncHandler(
+export const deleteReport = asyncHandler(
   async (req: Request, res: Response) => {
-    const candidateId = parseInt(req.params.candidateId, 10);
-    await reportService.deleteReportByCandidateId(candidateId);
+    const reportId = parseInt(req.params.reportId, 10);
+    await reportService.deleteReport(reportId);
 
     res
       .status(REPORT_VALIDATION_STATUS_CODES.SUCCESS)
       .json({ message: "Report deleted successfully." });
+  }
+);
+
+export const getReportById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const reportId = parseInt(req.params.reportId, 10);
+    const report = await reportService.getReportById(reportId);
+
+    if (!report) {
+      return res
+        .status(REPORT_VALIDATION_STATUS_CODES.NOT_FOUND)
+        .json({ error: "Report not found." });
+    }
+
+    res.status(REPORT_VALIDATION_STATUS_CODES.SUCCESS).json(report);
   }
 );

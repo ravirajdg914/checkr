@@ -7,6 +7,7 @@ import { MESSAGES, STATUS_CODES } from "../utils/constants";
 // Mocking Sequelize Model Methods
 jest.mock("../models/reportModel", () => ({
   findOne: jest.fn(),
+  findByPk: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
   destroy: jest.fn(),
@@ -90,52 +91,104 @@ describe("ReportService", () => {
     });
   });
 
-  describe("updateReportByCandidateId", () => {
-    it("should throw error if report is not found", async () => {
-      (Report.findOne as jest.Mock).mockResolvedValueOnce(null);
-
-      await expect(
-        reportService.updateReportByCandidateId(mockCandidateId, mockReportData)
-      ).rejects.toEqual(
-        new CustomError(MESSAGES.ERROR.REPORT_NOT_FOUND, STATUS_CODES.NOT_FOUND)
-      );
-    });
+  describe("updateReport", () => {
+    const mockReportData = {
+      status: "clear",
+      package: "basic",
+      turnaround_time: 24,
+    };
 
     it("should update a report successfully", async () => {
       const mockReport = {
+        id: 1,
         ...mockReportData,
-        update: jest.fn().mockResolvedValueOnce(mockReportData),
+        update: jest.fn().mockImplementation(async function() {
+          return {
+            id: 1,
+            ...mockReportData
+          };
+        }),
       };
-      (Report.findOne as jest.Mock).mockResolvedValueOnce(mockReport);
 
-      const updatedReport = await reportService.updateReportByCandidateId(
-        mockCandidateId,
-        mockReportData
-      );
+      (Report.findByPk as jest.Mock).mockResolvedValue(mockReport);
 
-      expect(updatedReport).toMatchObject(mockReportData);
+      const result = await reportService.updateReport(1, mockReportData);
+
+      expect(Report.findByPk).toHaveBeenCalledWith(1);
       expect(mockReport.update).toHaveBeenCalledWith(mockReportData);
+      
+      // Compare only the data properties, excluding the update function
+      const { update, ...resultWithoutUpdate } = result;
+      expect(resultWithoutUpdate).toEqual({ id: 1, ...mockReportData });
+    });
+
+    it("should throw an error if report is not found", async () => {
+      (Report.findByPk as jest.Mock).mockResolvedValue(null);
+
+      await expect(reportService.updateReport(1, mockReportData)).rejects.toEqual(
+        new CustomError(
+          MESSAGES.ERROR.REPORT_NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        )
+      );
     });
   });
 
-  describe("deleteReportByCandidateId", () => {
-    it("should throw error if report is not found", async () => {
-      (Report.findOne as jest.Mock).mockResolvedValueOnce(null);
+  describe("deleteReport", () => {
+    it("should delete a report successfully", async () => {
+      const mockReport = {
+        id: 1,
+        destroy: jest.fn().mockResolvedValue(undefined),
+      };
 
-      await expect(
-        reportService.deleteReportByCandidateId(mockCandidateId)
-      ).rejects.toEqual(
-        new CustomError(MESSAGES.ERROR.REPORT_NOT_FOUND, STATUS_CODES.NOT_FOUND)
+      (Report.findByPk as jest.Mock).mockResolvedValue(mockReport);
+
+      await reportService.deleteReport(1);
+
+      expect(Report.findByPk).toHaveBeenCalledWith(1);
+      expect(mockReport.destroy).toHaveBeenCalled();
+    });
+
+    it("should throw an error if report is not found", async () => {
+      (Report.findByPk as jest.Mock).mockResolvedValue(null);
+
+      await expect(reportService.deleteReport(1)).rejects.toEqual(
+        new CustomError(
+          MESSAGES.ERROR.REPORT_NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        )
+      );
+    });
+  });
+
+  describe("getReportById", () => {
+    it("should throw error if report is not found", async () => {
+      (Report.findByPk as jest.Mock).mockResolvedValueOnce(null);
+
+      await expect(reportService.getReportById(1)).rejects.toEqual(
+        new CustomError(
+          MESSAGES.ERROR.REPORT_NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        )
       );
     });
 
-    it("should delete a report successfully", async () => {
-      const mockReport = { destroy: jest.fn().mockResolvedValueOnce(null) };
-      (Report.findOne as jest.Mock).mockResolvedValueOnce(mockReport);
+    it("should retrieve a report successfully", async () => {
+      const mockReport = {
+        id: 1,
+        status: "clear",
+        package: "Standard Package",
+        adjudication: "Approved",
+        turnaround_time: 48,
+        completed_at: new Date(),
+      };
 
-      await reportService.deleteReportByCandidateId(mockCandidateId);
+      (Report.findByPk as jest.Mock).mockResolvedValueOnce(mockReport);
 
-      expect(mockReport.destroy).toHaveBeenCalled();
+      const report = await reportService.getReportById(1);
+
+      expect(Report.findByPk).toHaveBeenCalledWith(1);
+      expect(report).toEqual(mockReport);
     });
   });
 });

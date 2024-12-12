@@ -2,16 +2,18 @@
 jest.mock("../services/reportService", () => ({
   createReport: jest.fn(),
   getReportByCandidateId: jest.fn(),
-  updateReportByCandidateId: jest.fn(),
-  deleteReportByCandidateId: jest.fn(),
+  updateReport: jest.fn(),
+  deleteReport: jest.fn(),
+  getReportById: jest.fn(),
 }));
 
 // Import the controller functions and dependencies
 import {
   createReport,
   getReportByCandidateId,
-  updateReportByCandidateId,
-  deleteReportByCandidateId,
+  updateReport,
+  deleteReport,
+  getReportById,
 } from "../controllers/reportController";
 import { Request, Response } from "express";
 import reportService from "../services/reportService";
@@ -101,81 +103,104 @@ describe("ReportController", () => {
     });
   });
 
-  describe("updateReportByCandidateId", () => {
+  describe("updateReport", () => {
     it("should update a report and return 200 status", async () => {
       const req = mockRequest(
         { title: "Updated Report", content: "Updated details" },
-        { candidateId: "1" }
+        { reportId: "1" }
       );
       const res = mockResponse();
       const next = jest.fn();
       const updatedReport = {
         id: 1,
-        candidateId: 1,
         title: "Updated Report",
         content: "Updated details",
       };
 
-      (
-        reportService.updateReportByCandidateId as jest.Mock
-      ).mockResolvedValueOnce(updatedReport);
+      (reportService.updateReport as jest.Mock).mockResolvedValueOnce(updatedReport);
 
-      await updateReportByCandidateId(req, res, next);
+      await updateReport(req, res, next);
 
-      expect(reportService.updateReportByCandidateId).toHaveBeenCalledWith(
-        1,
-        req.body
-      );
-      expect(res.status).toHaveBeenCalledWith(
-        REPORT_VALIDATION_STATUS_CODES.SUCCESS
-      );
+      expect(reportService.updateReport).toHaveBeenCalledWith(1, req.body);
+      expect(res.status).toHaveBeenCalledWith(REPORT_VALIDATION_STATUS_CODES.SUCCESS);
       expect(res.json).toHaveBeenCalledWith(updatedReport);
     });
 
     it("should handle errors when report is not found", async () => {
       const req = mockRequest(
         { title: "Updated Report" },
-        { candidateId: "1" }
+        { reportId: "1" }
       );
       const res = mockResponse();
       const next = jest.fn();
 
-      (
-        reportService.updateReportByCandidateId as jest.Mock
-      ).mockResolvedValueOnce(null);
+      (reportService.updateReport as jest.Mock).mockResolvedValueOnce(null);
 
-      await updateReportByCandidateId(req, res, next);
+      await updateReport(req, res, next);
 
-      expect(reportService.updateReportByCandidateId).toHaveBeenCalledWith(
-        1,
-        req.body
-      );
-      expect(res.status).toHaveBeenCalledWith(
-        REPORT_VALIDATION_STATUS_CODES.NOT_FOUND
-      );
+      expect(reportService.updateReport).toHaveBeenCalledWith(1, req.body);
+      expect(res.status).toHaveBeenCalledWith(REPORT_VALIDATION_STATUS_CODES.NOT_FOUND);
       expect(res.json).toHaveBeenCalledWith({ error: "Report not found." });
     });
   });
 
-  describe("deleteReportByCandidateId", () => {
+  describe("deleteReport", () => {
     it("should delete a report and return 200 status", async () => {
-      const req = mockRequest({}, { candidateId: "1" });
+      const req = mockRequest({}, { reportId: "1" });
       const res = mockResponse();
       const next = jest.fn();
 
-      (
-        reportService.deleteReportByCandidateId as jest.Mock
-      ).mockResolvedValueOnce(undefined);
+      (reportService.deleteReport as jest.Mock).mockResolvedValueOnce(undefined);
 
-      await deleteReportByCandidateId(req, res, next);
+      await deleteReport(req, res, next);
 
-      expect(reportService.deleteReportByCandidateId).toHaveBeenCalledWith(1);
-      expect(res.status).toHaveBeenCalledWith(
-        REPORT_VALIDATION_STATUS_CODES.SUCCESS
-      );
+      expect(reportService.deleteReport).toHaveBeenCalledWith(1);
+      expect(res.status).toHaveBeenCalledWith(REPORT_VALIDATION_STATUS_CODES.SUCCESS);
       expect(res.json).toHaveBeenCalledWith({
         message: "Report deleted successfully.",
       });
+    });
+  });
+
+  describe("getReportById", () => {
+    it("should return a report and 200 status", async () => {
+      const req = mockRequest({}, { reportId: "1" });
+      const res = mockResponse();
+      const next = jest.fn();
+      const report = {
+        id: 1,
+        status: "clear",
+        package: "Standard Package",
+        adjudication: "Approved",
+        turnaround_time: 48,
+        completed_at: new Date(),
+      };
+
+      (reportService.getReportById as jest.Mock).mockResolvedValueOnce(report);
+
+      await getReportById(req, res, next);
+
+      expect(reportService.getReportById).toHaveBeenCalledWith(1);
+      expect(res.status).toHaveBeenCalledWith(
+        REPORT_VALIDATION_STATUS_CODES.SUCCESS
+      );
+      expect(res.json).toHaveBeenCalledWith(report);
+    });
+
+    it("should handle errors when report is not found", async () => {
+      const req = mockRequest({}, { reportId: "1" });
+      const res = mockResponse();
+      const next = jest.fn();
+
+      (reportService.getReportById as jest.Mock).mockResolvedValueOnce(null);
+
+      await getReportById(req, res, next);
+
+      expect(reportService.getReportById).toHaveBeenCalledWith(1);
+      expect(res.status).toHaveBeenCalledWith(
+        REPORT_VALIDATION_STATUS_CODES.NOT_FOUND
+      );
+      expect(res.json).toHaveBeenCalledWith({ error: "Report not found." });
     });
   });
 });
