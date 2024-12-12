@@ -28,6 +28,7 @@ export const MESSAGES = {
     FETCH_CANDIDATES_FAILED: "Error fetching candidates.",
     REPORT_NOT_FOUND: "Report not found.",
     REPORT_ALREADY_EXISTS: "Report already exists for this candidate.",
+    COURT_SEARCH_NOT_FOUND: "Court search not found.",
   },
 };
 
