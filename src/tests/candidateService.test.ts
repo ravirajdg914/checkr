@@ -2,6 +2,8 @@ import candidateService from "../services/candidateService";
 import Candidate from "../models/candidateModel";
 import { MESSAGES, STATUS_CODES } from "../utils/constants";
 import { CustomError } from "../utils/errorUtil";
+import Report from "../models/reportModel";
+import CourtSearch from "../models/courtSearchModel";
 
 jest.mock("../models/candidateModel", () => ({
   findOne: jest.fn(),
@@ -10,6 +12,14 @@ jest.mock("../models/candidateModel", () => ({
   update: jest.fn(),
   destroy: jest.fn(),
   findAll: jest.fn(),
+}));
+
+jest.mock("../models/reportModel", () => ({
+  destroy: jest.fn(),
+}));
+
+jest.mock("../models/courtSearchModel", () => ({
+  destroy: jest.fn(),
 }));
 
 describe("CandidateService", () => {
@@ -125,25 +135,54 @@ describe("CandidateService", () => {
   });
 
   describe("deleteCandidateById", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it("should throw error if candidate not found", async () => {
       (Candidate.findByPk as jest.Mock).mockResolvedValueOnce(null);
 
       try {
         await candidateService.deleteCandidateById(1);
       } catch (error: any) {
+        expect(error).toBeInstanceOf(CustomError);
         expect(error.message).toBe(MESSAGES.ERROR.CANDIDATE_NOT_FOUND);
       }
     });
 
-    it("should delete candidate if found", async () => {
+    it("should delete candidate and associated records if found", async () => {
+      // Mock candidate
       (Candidate.findByPk as jest.Mock).mockResolvedValueOnce({
         ...mockCandidate,
         destroy: jest.fn().mockResolvedValueOnce(undefined),
       });
 
+      // Mock associated records deletion
+      (Report.destroy as jest.Mock).mockResolvedValueOnce(undefined);
+      (CourtSearch.destroy as jest.Mock).mockResolvedValueOnce(undefined);
+
       await candidateService.deleteCandidateById(1);
 
+      // Verify all destroy methods were called
+      expect(Report.destroy).toHaveBeenCalledWith({ where: { candidateId: 1 } });
+      expect(CourtSearch.destroy).toHaveBeenCalledWith({ where: { candidateId: 1 } });
       expect(Candidate.findByPk).toHaveBeenCalledWith(1);
+    });
+
+    it("should throw error if deletion fails", async () => {
+      // Mock candidate find
+      (Candidate.findByPk as jest.Mock).mockResolvedValueOnce({
+        ...mockCandidate,
+        destroy: jest.fn().mockRejectedValueOnce(new Error(MESSAGES.ERROR.DELETE_CANDIDATE_FAILED))
+      });
+
+      try {
+        await candidateService.deleteCandidateById(1);
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(CustomError);
+        expect(error.message).toBe(MESSAGES.ERROR.DELETE_CANDIDATE_FAILED);
+        expect(error.status).toBe(STATUS_CODES.INTERNAL_SERVER_ERROR);
+      }
     });
   });
 

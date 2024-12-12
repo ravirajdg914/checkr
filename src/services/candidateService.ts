@@ -1,6 +1,8 @@
 import Candidate from "../models/candidateModel";
-import { STATUS_CODES, MESSAGES, CANDIDATE_ATTRIBUTES } from "../utils/constants";
+import { STATUS_CODES, MESSAGES, CANDIDATE_ATTRIBUTES, REPORT_ATTRIBUTES, COURT_SEARCH_ATTRIBUTES } from "../utils/constants";
 import { CustomError } from "../utils/errorUtil";
+import Report from "../models/reportModel";
+import CourtSearch from "../models/courtSearchModel";
 
 class CandidateService {
   async createCandidate(data: {
@@ -25,7 +27,18 @@ class CandidateService {
   }
 
   async getCandidateById(id: number) {
-    const candidate = await Candidate.findByPk(id);
+    const candidate = await Candidate.findByPk(id, {
+      include: [
+        {
+          model: Report,
+          attributes: REPORT_ATTRIBUTES
+        },
+        {
+          model: CourtSearch,
+          attributes: COURT_SEARCH_ATTRIBUTES
+        }
+      ]
+    });
 
     if (!candidate) {
       throw new CustomError(MESSAGES.ERROR.CANDIDATE_NOT_FOUND, STATUS_CODES.NOT_FOUND);
@@ -63,12 +76,20 @@ class CandidateService {
     try {
       const candidate = await Candidate.findByPk(id);
       if (!candidate) {
-        throw new Error(MESSAGES.ERROR.CANDIDATE_NOT_FOUND);
+        throw new CustomError(MESSAGES.ERROR.CANDIDATE_NOT_FOUND, STATUS_CODES.NOT_FOUND);
       }
 
+      // Delete associated records first
+      await Report.destroy({ where: { candidateId: id } });
+      await CourtSearch.destroy({ where: { candidateId: id } });
+
+      // Then delete the candidate
       await candidate.destroy();
     } catch (error: any) {
-      throw new Error(error.message || MESSAGES.ERROR.DELETE_CANDIDATE_FAILED);
+      throw new CustomError(
+        error.message || MESSAGES.ERROR.DELETE_CANDIDATE_FAILED,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 }

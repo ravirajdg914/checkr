@@ -50,3 +50,17 @@ export const CANDIDATE_ATTRIBUTES = [
   "location",
   "date",
 ];
+
+export const REPORT_ATTRIBUTES = [
+  "status",
+  "package",
+  "adjudication",
+  "turnaround_time",
+  "completed_at"
+];
+
+export const COURT_SEARCH_ATTRIBUTES = [
+  "status",
+  "search_type",
+  "date"
+];

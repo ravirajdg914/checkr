@@ -18,6 +18,7 @@ import {
 import { Request, Response } from "express";
 import { MESSAGES, STATUS_CODES } from "../utils/constants";
 import candidateService from "../services/candidateService";
+import { CustomError } from "../utils/errorUtil";
 
 describe("CandidateController", () => {
   const mockRequest = (body = {}, params = {}) =>
@@ -104,14 +105,12 @@ describe("CandidateController", () => {
   });
 
   describe("deleteCandidate", () => {
-    it("should delete a candidate and return 200 status", async () => {
+    it("should delete a candidate and associated records and return 200 status", async () => {
       const req = mockRequest({}, { id: "1" });
       const res = mockResponse();
       const next = jest.fn();
 
-      (candidateService.deleteCandidateById as jest.Mock).mockResolvedValueOnce(
-        undefined
-      );
+      (candidateService.deleteCandidateById as jest.Mock).mockResolvedValueOnce(undefined);
 
       await deleteCandidate(req, res, next);
 
@@ -121,6 +120,28 @@ describe("CandidateController", () => {
         message: MESSAGES.SUCCESS.CANDIDATE_DELETED,
       });
       expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should handle errors when deletion fails", async () => {
+      const req = mockRequest({}, { id: "1" });
+      const res = mockResponse();
+      const next = jest.fn();
+
+      const error = new CustomError(
+        MESSAGES.ERROR.DELETE_CANDIDATE_FAILED,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+      
+      (candidateService.deleteCandidateById as jest.Mock).mockRejectedValueOnce(error);
+
+      try {
+        await deleteCandidate(req, res, next);
+      } catch (err) {
+        expect(candidateService.deleteCandidateById).toHaveBeenCalledWith(1);
+        expect(res.status).not.toHaveBeenCalled();
+        expect(res.json).not.toHaveBeenCalled();
+        expect(err).toEqual(error);
+      }
     });
   });
 
