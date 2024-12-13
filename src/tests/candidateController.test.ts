@@ -110,9 +110,7 @@ describe("CandidateController", () => {
       const res = mockResponse();
       const next = jest.fn();
 
-      (candidateService.deleteCandidateById as jest.Mock).mockResolvedValueOnce(
-        undefined
-      );
+      (candidateService.deleteCandidateById as jest.Mock).mockResolvedValueOnce(undefined);
 
       await deleteCandidate(req, res, next);
 
