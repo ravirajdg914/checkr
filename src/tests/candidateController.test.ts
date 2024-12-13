@@ -110,7 +110,9 @@ describe("CandidateController", () => {
       const res = mockResponse();
       const next = jest.fn();
 
-      (candidateService.deleteCandidateById as jest.Mock).mockResolvedValueOnce(undefined);
+      (candidateService.deleteCandidateById as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       await deleteCandidate(req, res, next);
 
@@ -200,6 +202,43 @@ describe("CandidateController", () => {
       expect(res.json).toHaveBeenCalledWith({
         message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND,
       });
+    });
+
+    it("should update a candidate and return 200 status", async () => {
+      const req = mockRequest(updateData, { id: "1" });
+      const res = mockResponse();
+      const next = jest.fn();
+      const candidate = {
+        id: 1,
+        name: "John Doe",
+        email: "johndoe@example.com",
+      };
+
+      const updatedCandidate = {
+        ...candidate,
+        ...updateData,
+      };
+
+      (candidateService.getCandidateById as jest.Mock).mockResolvedValueOnce(
+        candidate
+      );
+      (candidateService.updateCandidateById as jest.Mock).mockResolvedValueOnce(
+        updatedCandidate
+      );
+
+      await updateCandidate(req, res, next);
+
+      expect(candidateService.getCandidateById).toHaveBeenCalledWith(1);
+      expect(candidateService.updateCandidateById).toHaveBeenCalledWith(
+        1,
+        updateData
+      );
+      expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
+      expect(res.json).toHaveBeenCalledWith({
+        message: MESSAGES.SUCCESS.CANDIDATE_UPDATED,
+        candidate: updatedCandidate,
+      });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });
