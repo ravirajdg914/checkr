@@ -38,17 +38,9 @@ describe("CandidateService", () => {
     it("should throw error if email is already taken", async () => {
       (Candidate.findOne as jest.Mock).mockResolvedValueOnce(mockCandidate);
 
-      try {
-        await candidateService.createCandidate(mockCandidate);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect(error).toEqual(
-          expect.objectContaining({
-            message: MESSAGES.ERROR.EMAIL_TAKEN,
-            status: STATUS_CODES.BAD_REQUEST,
-          })
-        );
-      }
+      await expect(candidateService.createCandidate(mockCandidate)).rejects.toEqual(
+        new CustomError(MESSAGES.ERROR.EMAIL_TAKEN, STATUS_CODES.BAD_REQUEST)
+      );
     });
 
     it("should successfully create a new candidate", async () => {
@@ -58,6 +50,14 @@ describe("CandidateService", () => {
       const result = await candidateService.createCandidate(mockCandidate);
 
       expect(result).toEqual(mockCandidate);
+      expect(Candidate.create).toHaveBeenCalledWith(mockCandidate);
+    });
+
+    it("should throw error if Candidate.create fails", async () => {
+      (Candidate.findOne as jest.Mock).mockResolvedValueOnce(null);
+      (Candidate.create as jest.Mock).mockRejectedValueOnce(new Error("Create failed"));
+
+      await expect(candidateService.createCandidate(mockCandidate)).rejects.toThrow("Create failed");
     });
   });
 
@@ -65,17 +65,9 @@ describe("CandidateService", () => {
     it("should throw error if candidate not found", async () => {
       (Candidate.findByPk as jest.Mock).mockResolvedValueOnce(null);
 
-      try {
-        await candidateService.getCandidateById(1);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect(error).toEqual(
-          expect.objectContaining({
-            message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND,
-            status: STATUS_CODES.NOT_FOUND,
-          })
-        );
-      }
+      await expect(candidateService.getCandidateById(1)).rejects.toEqual(
+        new CustomError(MESSAGES.ERROR.CANDIDATE_NOT_FOUND, STATUS_CODES.NOT_FOUND)
+      );
     });
 
     it("should return candidate if found", async () => {
@@ -84,6 +76,24 @@ describe("CandidateService", () => {
       const result = await candidateService.getCandidateById(1);
 
       expect(result).toEqual(mockCandidate);
+      expect(Candidate.findByPk).toHaveBeenCalledWith(1, {
+        include: [
+          {
+            model: Report,
+            attributes: expect.any(Array),
+          },
+          {
+            model: CourtSearch,
+            attributes: expect.any(Array),
+          },
+        ],
+      });
+    });
+
+    it("should throw error if Candidate.findByPk fails", async () => {
+      (Candidate.findByPk as jest.Mock).mockRejectedValueOnce(new Error("FindByPk failed"));
+
+      await expect(candidateService.getCandidateById(1)).rejects.toThrow("FindByPk failed");
     });
   });
 
@@ -91,11 +101,9 @@ describe("CandidateService", () => {
     it("should throw error if candidate not found", async () => {
       (Candidate.findByPk as jest.Mock).mockResolvedValueOnce(null);
 
-      try {
-        await candidateService.updateCandidateById(1, { name: "Jane Doe" });
-      } catch (error: any) {
-        expect(error.message).toBe(MESSAGES.ERROR.CANDIDATE_NOT_FOUND);
-      }
+      await expect(candidateService.updateCandidateById(1, { name: "Jane Doe" })).rejects.toThrow(
+        MESSAGES.ERROR.CANDIDATE_NOT_FOUND
+      );
     });
 
     it("should update candidate if found", async () => {
@@ -132,6 +140,23 @@ describe("CandidateService", () => {
         ...updatedData,
       });
     });
+
+    it("should throw error if candidate.update fails", async () => {
+      type CandidateMock = typeof mockCandidate & { update: jest.Mock };
+
+      const mockCandidateWithUpdate: CandidateMock = {
+        ...mockCandidate,
+        update: jest.fn().mockRejectedValueOnce(new Error("Update failed")),
+      };
+
+      (Candidate.findByPk as jest.Mock).mockResolvedValueOnce(
+        mockCandidateWithUpdate
+      );
+
+      await expect(candidateService.updateCandidateById(1, { name: "Jane Doe" })).rejects.toThrow(
+        "Update failed"
+      );
+    });
   });
 
   describe("deleteCandidateById", () => {
@@ -142,12 +167,9 @@ describe("CandidateService", () => {
     it("should throw error if candidate not found", async () => {
       (Candidate.findByPk as jest.Mock).mockResolvedValueOnce(null);
 
-      try {
-        await candidateService.deleteCandidateById(1);
-      } catch (error: any) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect(error.message).toBe(MESSAGES.ERROR.CANDIDATE_NOT_FOUND);
-      }
+      await expect(candidateService.deleteCandidateById(1)).rejects.toEqual(
+        new CustomError(MESSAGES.ERROR.CANDIDATE_NOT_FOUND, STATUS_CODES.NOT_FOUND)
+      );
     });
 
     it("should delete candidate and associated records if found", async () => {
@@ -176,13 +198,9 @@ describe("CandidateService", () => {
         destroy: jest.fn().mockRejectedValueOnce(new Error(MESSAGES.ERROR.DELETE_CANDIDATE_FAILED))
       });
 
-      try {
-        await candidateService.deleteCandidateById(1);
-      } catch (error: any) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect(error.message).toBe(MESSAGES.ERROR.DELETE_CANDIDATE_FAILED);
-        expect(error.status).toBe(STATUS_CODES.INTERNAL_SERVER_ERROR);
-      }
+      await expect(candidateService.deleteCandidateById(1)).rejects.toEqual(
+        new CustomError(MESSAGES.ERROR.DELETE_CANDIDATE_FAILED, STATUS_CODES.INTERNAL_SERVER_ERROR)
+      );
     });
   });
 
@@ -194,6 +212,17 @@ describe("CandidateService", () => {
       const result = await candidateService.getAllCandidates();
 
       expect(result).toEqual(candidates);
+      expect(Candidate.findAll).toHaveBeenCalledWith({
+        attributes: expect.any(Array),
+      });
+    });
+
+    it("should return an empty array if no candidates found", async () => {
+      (Candidate.findAll as jest.Mock).mockResolvedValueOnce([]);
+
+      const result = await candidateService.getAllCandidates();
+
+      expect(result).toEqual([]);
     });
 
     it("should throw error if fetching candidates fails", async () => {
@@ -201,11 +230,9 @@ describe("CandidateService", () => {
         new Error("Fetch error")
       );
 
-      try {
-        await candidateService.getAllCandidates();
-      } catch (error: any) {
-        expect(error.message).toBe(MESSAGES.ERROR.FETCH_CANDIDATES_FAILED);
-      }
+      await expect(candidateService.getAllCandidates()).rejects.toThrow(
+        MESSAGES.ERROR.FETCH_CANDIDATES_FAILED
+      );
     });
   });
 });

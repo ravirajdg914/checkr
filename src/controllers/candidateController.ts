@@ -26,47 +26,29 @@ export const getCandidateById = asyncHandler(
   }
 );
 
-export const updateCandidate = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateCandidate = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const {
-      name,
-      email,
-      dob,
-      phone,
-      zipcode,
-      social_security,
-      drivers_license,
-    } = req.body;
+    const updateData = req.body;
 
-    const candidate = await candidateService.getCandidateById(Number(id));
+    try {
+        const candidate = await candidateService.getCandidateById(Number(id));
 
-    if (!candidate) {
-      res
-        .status(STATUS_CODES.NOT_FOUND)
-        .json({ message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND });
-      return;
+        if (!candidate) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: MESSAGES.ERROR.CANDIDATE_NOT_FOUND,
+            });
+        }
+
+        const updatedCandidate = await candidateService.updateCandidateById(Number(id), updateData);
+
+        return res.status(STATUS_CODES.SUCCESS).json({
+            message: MESSAGES.SUCCESS.CANDIDATE_UPDATED,
+            candidate: updatedCandidate,
+        });
+    } catch (error) {
+        next(error);
     }
-
-    const updatedCandidate = await candidateService.updateCandidateById(
-      Number(id),
-      {
-        name,
-        email,
-        dob,
-        phone,
-        zipcode,
-        social_security,
-        drivers_license,
-      }
-    );
-
-    res.status(STATUS_CODES.SUCCESS).json({
-      message: MESSAGES.SUCCESS.CANDIDATE_UPDATED,
-      candidate: updatedCandidate,
-    });
-  }
-);
+};
 
 export const deleteCandidate = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
