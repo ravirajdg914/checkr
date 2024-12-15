@@ -14,6 +14,7 @@ jest.mock("../services/courtSearchService", () => ({
     getCourtSearchById,
     updateCourtSearchStatus,
     deleteCourtSearch,
+    getCourtSearchesByCandidateId,
   } from "../controllers/courtSearchController";
   import { Request, Response } from "express";
   import courtSearchService from "../services/courtSearchService";
@@ -24,6 +25,7 @@ jest.mock("../services/courtSearchService", () => ({
       ({
         body,
         params,
+        query: {},
       } as Request);
   
     const mockResponse = () => {
@@ -119,6 +121,41 @@ jest.mock("../services/courtSearchService", () => ({
         expect(res.json).toHaveBeenCalledWith({
           message: "Court search deleted successfully.",
         });
+      });
+    });
+  
+    describe("getCourtSearchesByCandidateId", () => {
+      it("should return a specific court search when courtSearchId is provided", async () => {
+        const req = mockRequest({}, {});
+        req.query = { candidateId: "1", courtSearchId: "1" };
+        const res = mockResponse();
+        const courtSearch = { id: 1, candidateId: 1, status: "clear" };
+  
+        (courtSearchService.getCourtSearchById as jest.Mock).mockResolvedValueOnce(courtSearch);
+  
+        await getCourtSearchesByCandidateId(req, res, jest.fn());
+  
+        expect(courtSearchService.getCourtSearchById).toHaveBeenCalledWith(1);
+        expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
+        expect(res.json).toHaveBeenCalledWith(courtSearch);
+      });
+  
+      it("should return all court searches for a candidate when courtSearchId is not provided", async () => {
+        const req = mockRequest({}, {});
+        req.query = { candidateId: "1" };
+        const res = mockResponse();
+        const courtSearches = [
+          { id: 1, candidateId: 1, status: "clear" },
+          { id: 2, candidateId: 1, status: "consider" },
+        ];
+  
+        (courtSearchService.getCourtSearchesByCandidateId as jest.Mock).mockResolvedValueOnce(courtSearches);
+  
+        await getCourtSearchesByCandidateId(req, res, jest.fn());
+  
+        expect(courtSearchService.getCourtSearchesByCandidateId).toHaveBeenCalledWith(1);
+        expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
+        expect(res.json).toHaveBeenCalledWith(courtSearches);
       });
     });
   });
