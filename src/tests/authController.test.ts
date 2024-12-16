@@ -5,6 +5,7 @@ import { createCustomError } from "../utils/errorUtil";
 import authService from "../services/authService";
 
 import jwt from "jsonwebtoken";
+import { logout } from "../controllers/authController";
 jest.mock("jsonwebtoken", () => ({
   ...jest.requireActual("jsonwebtoken"), // import and retain the original functionalities
   verify: jest.fn().mockReturnValue({ foo: "bar" }), // overwrite verify
@@ -124,6 +125,33 @@ describe("AuthService", () => {
           createCustomError(MESSAGES.ERROR.INVALID_CREDENTIALS, 401)
         );
       }
+    });
+  });
+
+  describe("logout", () => {
+    it("should successfully log out a user", async () => {
+      const req = {} as any; // Mock request object
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any; // Mock response object
+
+      const next = jest.fn(); // Mock next function
+
+      // Call the logout controller directly
+      await logout(req, res, next);
+
+      // Validate response
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true, // Add the `success` field
+        statusCode: 200, // Add the `statusCode` field
+        message: MESSAGES.SUCCESS.LOGOUT_SUCCESS,
+        data: null, // Include `data` if it's part of the actual response
+      });
+
+      // Ensure next is not called (no errors should propagate)
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });
