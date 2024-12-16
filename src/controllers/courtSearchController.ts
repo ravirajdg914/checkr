@@ -22,9 +22,21 @@ export const getCourtSearchesByCandidateId = asyncHandler(
       ? parseInt(req.query.courtSearchId as string, 10)
       : null;
 
+    if (isNaN(candidateId)) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        message: "Invalid candidate ID.",
+      });
+    }
+
+    if (courtSearchId !== null && isNaN(courtSearchId)) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        message: "Invalid court search ID.",
+      });
+    }
+
     if (courtSearchId) {
       const courtSearch = await courtSearchService.getCourtSearchById(
-        candidateId,
+        courtSearchId
       );
       res.status(STATUS_CODES.SUCCESS).json(courtSearch);
     } else {
