@@ -29,6 +29,9 @@ export const MESSAGES = {
     REPORT_NOT_FOUND: "Report not found.",
     REPORT_ALREADY_EXISTS: "Report already exists for this candidate.",
     COURT_SEARCH_NOT_FOUND: "Court search not found.",
+    NAME_NOT_FOUND: "Candidate name not found",
+    PAGE_OUT_OF_RANGE: (page: number, totalPages: number) =>
+      `Page ${page} is out of range. Total pages: ${totalPages}`,
   },
 };
 
@@ -56,11 +59,7 @@ export const REPORT_ATTRIBUTES = [
   "package",
   "adjudication",
   "turnaround_time",
-  "completed_at"
+  "completed_at",
 ];
 
-export const COURT_SEARCH_ATTRIBUTES = [
-  "status",
-  "search_type",
-  "date"
-];
+export const COURT_SEARCH_ATTRIBUTES = ["status", "search_type", "date"];

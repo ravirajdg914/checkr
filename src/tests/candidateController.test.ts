@@ -21,11 +21,12 @@ import candidateService from "../services/candidateService";
 import { CustomError } from "../utils/errorUtil";
 
 describe("CandidateController", () => {
-  const mockRequest = (body = {}, params = {}) =>
+  const mockRequest = (body = {}, params = {}, query = {}) =>
     ({
       body,
       params,
-    } as Request);
+      query,
+    } as unknown as Request);
 
   const mockResponse = () => {
     const res = {} as Response;
@@ -150,10 +151,51 @@ describe("CandidateController", () => {
   });
 
   describe("getAllCandidates", () => {
-    it("should return all candidates and 200 status", async () => {
-      const req = mockRequest();
+    const mockRequest = (query = {}) => ({ query } as Request);
+    const mockResponse = () => {
+      const res = {} as Response;
+      res.status = jest.fn().mockReturnValue(res);
+      res.json = jest.fn().mockReturnValue(res);
+      return res;
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should return paginated candidates and 200 status", async () => {
+      const req = mockRequest({ page: "1" });
       const res = mockResponse();
       const next = jest.fn();
+
+      const candidates = Array.from({ length: 25 }, (_, i) => ({
+        id: i + 1,
+        name: `Candidate ${i + 1}`,
+        email: `candidate${i + 1}@example.com`,
+      }));
+
+      (candidateService.getAllCandidates as jest.Mock).mockResolvedValueOnce(
+        candidates
+      );
+
+      await getAllCandidates(req, res, next);
+
+      expect(candidateService.getAllCandidates).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
+      expect(res.json).toHaveBeenCalledWith({
+        totalCandidates: 25,
+        totalPages: 3,
+        currentPage: 1,
+        candidates: candidates.slice(0, 10), // First page candidates
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should return filtered candidates by name and 200 status", async () => {
+      const req = mockRequest({ name: "John" });
+      const res = mockResponse();
+      const next = jest.fn();
+
       const candidates = [
         { id: 1, name: "John Doe", email: "johndoe@example.com" },
         { id: 2, name: "Jane Doe", email: "janedoe@example.com" },
@@ -167,7 +209,83 @@ describe("CandidateController", () => {
 
       expect(candidateService.getAllCandidates).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
-      expect(res.json).toHaveBeenCalledWith(candidates);
+      expect(res.json).toHaveBeenCalledWith({
+        totalCandidates: 1,
+        totalPages: 1,
+        currentPage: 1,
+        candidates: [candidates[0]], // Only John Doe matches
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if no candidates match the search name", async () => {
+      const req = mockRequest({ name: "Nonexistent" });
+      const res = mockResponse();
+      const next = jest.fn();
+
+      const candidates = [
+        { id: 1, name: "John Doe", email: "johndoe@example.com" },
+        { id: 2, name: "Jane Doe", email: "janedoe@example.com" },
+      ];
+
+      (candidateService.getAllCandidates as jest.Mock).mockResolvedValueOnce(
+        candidates
+      );
+
+      await getAllCandidates(req, res, next);
+
+      expect(candidateService.getAllCandidates).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
+      expect(res.json).toHaveBeenCalledWith({
+        message: MESSAGES.ERROR.NAME_NOT_FOUND,
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if page number is out of range", async () => {
+      const req = mockRequest({ page: "5" });
+      const res = mockResponse();
+      const next = jest.fn();
+
+      const candidates = Array.from({ length: 25 }, (_, i) => ({
+        id: i + 1,
+        name: `Candidate ${i + 1}`,
+        email: `candidate${i + 1}@example.com`,
+      }));
+
+      (candidateService.getAllCandidates as jest.Mock).mockResolvedValueOnce(
+        candidates
+      );
+
+      await getAllCandidates(req, res, next);
+
+      expect(candidateService.getAllCandidates).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
+      expect(res.json).toHaveBeenCalledWith({
+        message: MESSAGES.ERROR.PAGE_OUT_OF_RANGE(5, 3),
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should handle an empty list of candidates gracefully", async () => {
+      const req = mockRequest();
+      const res = mockResponse();
+      const next = jest.fn();
+
+      (candidateService.getAllCandidates as jest.Mock).mockResolvedValueOnce(
+        []
+      );
+
+      await getAllCandidates(req, res, next);
+
+      expect(candidateService.getAllCandidates).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
+      expect(res.json).toHaveBeenCalledWith({
+        totalCandidates: 0,
+        totalPages: 0,
+        currentPage: 1,
+        candidates: [],
+      });
       expect(next).not.toHaveBeenCalled();
     });
   });
