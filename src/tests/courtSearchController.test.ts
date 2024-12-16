@@ -157,6 +157,32 @@ jest.mock("../services/courtSearchService", () => ({
         expect(res.status).toHaveBeenCalledWith(STATUS_CODES.SUCCESS);
         expect(res.json).toHaveBeenCalledWith(courtSearches);
       });
+  
+      it("should handle invalid candidateId gracefully", async () => {
+        const req = mockRequest({}, {});
+        req.query = { candidateId: "invalid" };
+        const res = mockResponse();
+  
+        await getCourtSearchesByCandidateId(req, res, jest.fn());
+  
+        expect(res.status).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+        expect(res.json).toHaveBeenCalledWith({
+          message: "Invalid candidate ID.",
+        });
+      });
+  
+      it("should handle invalid courtSearchId gracefully", async () => {
+        const req = mockRequest({}, {});
+        req.query = { candidateId: "1", courtSearchId: "invalid" };
+        const res = mockResponse();
+  
+        await getCourtSearchesByCandidateId(req, res, jest.fn());
+  
+        expect(res.status).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+        expect(res.json).toHaveBeenCalledWith({
+          message: "Invalid court search ID.",
+        });
+      });
     });
   });
   
