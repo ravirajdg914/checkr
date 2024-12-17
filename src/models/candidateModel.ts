@@ -1,6 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
-import Report from './reportModel';
+import Report from "./reportModel";
 
 class Candidate extends Model {
   public id!: number;
@@ -21,6 +21,11 @@ class Candidate extends Model {
 
 Candidate.init(
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -53,7 +58,8 @@ Candidate.init(
     },
     adjudication: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: "clear",
     },
     status: {
       type: DataTypes.ENUM("clear", "consider"),
@@ -77,8 +83,8 @@ Candidate.init(
 );
 
 Candidate.hasOne(Report, {
-    foreignKey: "candidateId",
-    onDelete: 'CASCADE'
+  foreignKey: "candidateId",
+  onDelete: "CASCADE",
 });
 
 export default Candidate;

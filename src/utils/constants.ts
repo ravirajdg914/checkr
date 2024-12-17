@@ -9,6 +9,7 @@ export const MESSAGES = {
     SERVER_RUNNING: (port: any) => `Server running on http://localhost:${port}`,
     CANDIDATE_UPDATED: "Candidate updated successfully.",
     CANDIDATE_DELETED: "Candidate deleted successfully.",
+    PRE_ADVERSE_ACTION_UPDATED: "Adjudication updated successfully",
   },
   ERROR: {
     EMAIL_TAKEN: "Email is already taken.",
@@ -30,6 +31,8 @@ export const MESSAGES = {
     REPORT_ALREADY_EXISTS: "Report already exists for this candidate.",
     COURT_SEARCH_NOT_FOUND: "Court search not found.",
     NAME_NOT_FOUND: "Candidate name not found",
+    PRE_ADVERSE_ACTION_NOT_FOUND: "Pre adverse action not found",
+    INVALID_CHARGES: "Invalid charges provided",
     PAGE_OUT_OF_RANGE: (page: number, totalPages: number) =>
       `Page ${page} is out of range. Total pages: ${totalPages}`,
   },

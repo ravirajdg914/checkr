@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import candidateService from "../services/candidateService";
 import asyncHandler from "../utils/asyncHandler";
 import { STATUS_CODES, MESSAGES } from "../utils/constants";
+import PreAdverseAction from "../models/preAdverseActionModel";
 
 export const createCandidate = asyncHandler(
   async (req: Request, res: Response) => {
@@ -114,6 +115,39 @@ export const getAllCandidates = asyncHandler(
       totalPages: Math.ceil(totalCandidates / pageSize),
       currentPage: pageNumber,
       candidates: paginatedCandidates,
+    });
+  }
+);
+
+export const updatePreAdverseAction = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { charges } = req.body;
+
+    if (!charges || !Array.isArray(charges)) {
+      return res
+        .status(STATUS_CODES.BAD_REQUEST)
+        .json({ message: MESSAGES.ERROR.INVALID_CHARGES });
+    }
+
+    let preAdverseAction = await PreAdverseAction.findOne({
+      where: { candidateId: Number(id) },
+    });
+
+    if (!preAdverseAction) {
+      preAdverseAction = await PreAdverseAction.create({
+        candidateId: Number(id),
+        charges,
+      });
+    } else {
+      await preAdverseAction.update({ charges });
+    }
+
+    await candidateService.handlePreAdverseActionUpdate(Number(id));
+
+    res.status(STATUS_CODES.SUCCESS).json({
+      message: MESSAGES.SUCCESS.PRE_ADVERSE_ACTION_UPDATED,
+      preAdverseAction,
     });
   }
 );

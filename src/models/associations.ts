@@ -1,6 +1,7 @@
 import Candidate from "./candidateModel";
 import Report from "./reportModel";
 import CourtSearch from "./courtSearchModel";
+import PreAdverseAction from "./preAdverseActionModel";
 
 Candidate.hasOne(Report, {
   foreignKey: "candidateId",
@@ -18,6 +19,15 @@ Candidate.hasMany(CourtSearch, {
 });
 
 CourtSearch.belongsTo(Candidate, {
+  foreignKey: "candidateId",
+  onDelete: "CASCADE",
+});
+
+Candidate.hasMany(PreAdverseAction, {
+  foreignKey: "candidateId",
+  onDelete: "CASCADE",
+});
+PreAdverseAction.belongsTo(Candidate, {
   foreignKey: "candidateId",
   onDelete: "CASCADE",
 });
